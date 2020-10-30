@@ -1,0 +1,152 @@
+version: "3.7"
+
+services:
+  bind9:
+    build: ../../build/package/bind9/
+    hostname: bind9
+    domainname: oink
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.2
+
+  rabbitmq:
+    depends_on:
+      - bind9
+    build: ../../build/package/rabbitmq/
+    hostname: rabbitmq
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.10
+
+  couchdb:
+    depends_on:
+      - bind9
+    build: ../../build/package/couchdb/
+    hostname: couchdb
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    environment:
+      - COUCHDB_USER=couchdb
+      - COUCHDB_PASSWORD=couchdb
+    volumes:
+      - "${PWD}/data/couchdb:/opt/couchdb/data"
+    ports:
+      - "5984:5984"
+      - "5986:5986"
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.20
+
+  kamailio:
+    depends_on:
+      - bind9
+      - rabbitmq
+    build: ../../build/package/kamailio/
+    hostname: kamailio
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    ports:
+      - "5060:5060"
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.30
+
+  freeswitch:
+    depends_on:
+      - bind9
+    build: ../../build/package/freeswitch/
+    hostname: freeswitch
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.40
+
+  kazoo:
+    depends_on:
+      - bind9
+      - couchdb
+      - rabbitmq
+    build: ../../build/package/kazoo/
+    hostname: kazoo
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.50
+
+  monster-ui:
+    depends_on:
+      - bind9
+    build: ../../build/package/monster-ui/
+    hostname: monster-ui
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    ports:
+      - "80:80"
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.60
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.0.0/16

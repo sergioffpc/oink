@@ -1,0 +1,19 @@
+$TTL    604800
+oink.   IN         SOA     bind9 root.bind9.oink. (
+            1603893169     ; Serial
+                604800     ; Refresh
+                 86400     ; Retry
+               2419200     ; Expire
+                604800 )   ; Negative Cache TTL
+;
+; name servers - NS records
+        IN      NS      bind9
+
+; name servers - A records
+bind9       IN  A       172.16.0.2
+rabbitmq    IN  A       172.16.0.10
+couchdb     IN  A       172.16.0.20
+kamailio    IN  A       172.16.0.30
+freeswitch  IN  A       172.16.0.40
+kazoo       IN  A       172.16.0.50
+monster-ui  IN  A       172.16.0.60
