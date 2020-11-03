@@ -43,11 +43,6 @@ services:
       - 172.16.0.2
     dns_search:
       - oink
-    environment:
-      - COUCHDB_USER=couchdb
-      - COUCHDB_PASSWORD=couchdb
-    volumes:
-      - "${PWD}/data/couchdb:/opt/couchdb/data"
     ports:
       - "5984:5984"
       - "5986:5986"
@@ -101,18 +96,25 @@ services:
       app_net:
         ipv4_address: 172.16.0.40
 
-  kazoo:
+  kazoo-apps:
     depends_on:
       - bind9
       - couchdb
       - rabbitmq
+      - freeswitch
+      - kamailio
     build: ../../build/package/kazoo/
-    hostname: kazoo
+    command: /usr/sbin/kazoo-applications start
+    hostname: kazoo-apps
     domainname: oink
     dns:
       - 172.16.0.2
     dns_search:
       - oink
+    environment:
+      - VMARGS_PATH=/etc/kazoo/core/vm.args
+    ports:
+      - "8000:8000"
     security_opt:
       - apparmor:unconfined
     cap_add:
@@ -122,9 +124,36 @@ services:
       app_net:
         ipv4_address: 172.16.0.50
 
+  kazoo-ecallmgr:
+    depends_on:
+      - bind9
+      - couchdb
+      - rabbitmq
+      - freeswitch
+      - kamailio
+    build: ../../build/package/kazoo/
+    command: /usr/sbin/kazoo-ecallmgr start
+    hostname: kazoo-ecallmgr
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    environment:
+      - VMARGS_PATH=/etc/kazoo/core/vm.args
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.55
+
   monster-ui:
     depends_on:
       - bind9
+      - kazoo-apps
     build: ../../build/package/monster-ui/
     hostname: monster-ui
     domainname: oink

@@ -15,5 +15,6 @@ $TTL    604800
 20.0    IN  PTR       couchdb.oink.
 30.0    IN  PTR       kamailio.oink.
 40.0    IN  PTR       freeswitch.oink.
-50.0    IN  PTR       kazoo.oink.
+50.0    IN  PTR       kazoo-apps.oink.
+55.0    IN  PTR       kazoo-ecallmgr.oink.
 60.0    IN  PTR       monster-ui.oink.

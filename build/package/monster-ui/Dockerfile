@@ -9,5 +9,6 @@ RUN yum install -y httpd monster-ui
 RUN yum clean all
 
 COPY system/httpd/ /etc/httpd/
+COPY conf/ /var/www/html/monster-ui/js/
 
 CMD /usr/sbin/httpd -DFOREGROUND
