@@ -15,8 +15,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y freeswitch freeswitch-mod-
     freeswitch-mod-event-socket freeswitch-mod-kazoo freeswitch-mod-dialplan-xml freeswitch-mod-loopback            \
     freeswitch-mod-av freeswitch-mod-commands freeswitch-mod-conference freeswitch-mod-dptools freeswitch-mod-expr  \
     freeswitch-mod-http-cache freeswitch-mod-spandsp freeswitch-mod-g723-1 freeswitch-mod-amr freeswitch-mod-ilbc   \
-    freeswitch-mod-opus freeswitch-mod-sndfile freeswitch-mod-local-stream freeswitch-mod-tone-stream               \
-    freeswitch-mod-shout freeswitch-mod-flite freeswitch-mod-say-en
+    freeswitch-mod-opus freeswitch-mod-sndfile freeswitch-mod-sofia freeswitch-mod-local-stream                     \
+    freeswitch-mod-tone-stream freeswitch-mod-shout freeswitch-mod-flite freeswitch-mod-say-en
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dnsutils net-tools tcpdump sngrep
 

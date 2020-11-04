@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 docker-compose exec couchdb curl -vvv -X PUT localhost:5984/_node/couchdb@couchdb.oink/_config/admins/couchdb -d '"couchdb"'
+sleep 15  # wait for Kazoo to start up
 
 docker-compose exec kazoo-apps sup kazoo_media_maintenance import_prompts /opt/kazoo/sounds/en/us/
 
@@ -11,7 +12,13 @@ docker-compose exec kazoo-apps sup kazoo_media_maintenance import_prompts /opt/k
 # Account name, realm, and password can be changes afterwards via Monster UI.
 docker-compose exec kazoo-apps sup crossbar_maintenance create_account oink oink oink oink
 
-docker-compose exec kazoo-apps sup crossbar_maintenance init_apps /var/www/html/monster-ui/apps http://kazoo.oink:8000/v2
+docker-compose exec kazoo-apps sup crossbar_maintenance init_apps /var/www/html/monster-ui/apps http://localhost:8000/v2
 
 docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance add_fs_node freeswitch@freeswitch.oink
 docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance allow_sbc kamailio kamailio.oink
+docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance acl_summary
+docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance get_fs_nodes
+docker-compose exec kazoo-ecallmgr kazoo-ecallmgr status
+
+docker-compose exec freeswitch fs_cli -x 'erlang status'
+docker-compose exec freeswitch fs_cli -x 'sofia status'
