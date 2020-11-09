@@ -19,6 +19,3 @@ docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance allow_sb
 docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance acl_summary
 docker-compose exec kazoo-ecallmgr sup -n ecallmgr ecallmgr_maintenance get_fs_nodes
 docker-compose exec kazoo-ecallmgr kazoo-ecallmgr status
-
-docker-compose exec freeswitch fs_cli -x 'erlang status'
-docker-compose exec freeswitch fs_cli -x 'sofia status'
