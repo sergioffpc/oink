@@ -18,7 +18,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y freeswitch freeswitch-mod-
     freeswitch-mod-opus freeswitch-mod-sndfile freeswitch-mod-sofia freeswitch-mod-local-stream                     \
     freeswitch-mod-tone-stream freeswitch-mod-shout freeswitch-mod-flite freeswitch-mod-say-en
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dnsutils net-tools tcpdump sngrep
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dnsutils net-tools
 
 COPY system/sbin/ /usr/sbin/
 RUN chmod 755 /usr/sbin/kazoo-freeswitch

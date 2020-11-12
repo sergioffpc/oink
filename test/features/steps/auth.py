@@ -2,23 +2,21 @@ import hashlib
 import http.client
 import json
 
-from steps.config import config_env
 
-
-def authenticate():
+def authenticate(context):
     headers = {"Content-type": "application/json"}
 
-    username = config_env['username']
-    password = config_env['password']
+    username = context.config.userdata['username']
+    password = context.config.userdata['password']
     credentials = hashlib.md5(f"{username}:{password}".encode('utf-8')).hexdigest()
     body = json.dumps({
         "data": {
             "credentials": credentials,
-            "account_name": config_env['account_name']
+            "account_name": context.config.userdata['account_name']
         }
     })
 
-    conn = http.client.HTTPConnection(config_env['host'], config_env['port'])
+    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/user_auth", body, headers)
     response = conn.getresponse()
 

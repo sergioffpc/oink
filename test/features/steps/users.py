@@ -7,10 +7,10 @@ from behave import given
 
 from steps.accounts import get_account_id_by_name
 from steps.auth import authenticate
-from steps.config import config_env, config
 
 
-def create_user(auth, account_id, user_name, user_ext):
+def create_user(context, account_id, user_name, user_ext):
+    auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
@@ -30,7 +30,7 @@ def create_user(auth, account_id, user_name, user_ext):
             "password": user_name
         }
     })
-    conn = http.client.HTTPConnection(config_env['host'], config_env['port'])
+    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", f"/v2/accounts/{account_id}/users", body, headers)
     response = conn.getresponse()
     print(response.read())
@@ -40,7 +40,8 @@ def create_user(auth, account_id, user_name, user_ext):
     return response
 
 
-def create_callflow(auth, account_id, user_name, user_ext):
+def create_callflow(context, account_id, user_name, user_ext):
+    auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
@@ -60,7 +61,7 @@ def create_callflow(auth, account_id, user_name, user_ext):
             "type": "mainUserCallflow"
         }
     })
-    conn = http.client.HTTPConnection(config_env['host'], config_env['port'])
+    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", f"/v2/accounts/{account_id}/callflows", body, headers)
     response = conn.getresponse()
     print(response.read())
@@ -70,7 +71,8 @@ def create_callflow(auth, account_id, user_name, user_ext):
     return response
 
 
-def create_device(auth, account_id, user_name):
+def create_device(context, account_id, user_name):
+    auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
@@ -78,7 +80,7 @@ def create_device(auth, account_id, user_name):
         "data": {
             "sip": {
                 "password": user_name,
-                "realm": config['environment']['realm'],
+                "realm": context.config.userdata['realm'],
                 "username": user_name
             },
             "device_type": "softphone",
@@ -91,7 +93,7 @@ def create_device(auth, account_id, user_name):
             "name": user_name
         }
     })
-    conn = http.client.HTTPConnection(config_env['host'], config_env['port'])
+    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", f"/v2/accounts/{account_id}/devices", body, headers)
     response = conn.getresponse()
     print(response.read())
@@ -103,14 +105,13 @@ def create_device(auth, account_id, user_name):
 
 @given(u'an user with name "{user_name}" and extension "{user_ext}" for account "{acc_name}"')
 def step_impl(context, user_name, user_ext, acc_name):
-    auth = authenticate()
-    account_id = get_account_id_by_name(auth, acc_name)
+    account_id = get_account_id_by_name(context, acc_name)
 
-    response = create_user(auth, account_id, user_name, user_ext)
+    response = create_user(context, account_id, user_name, user_ext)
     assert response.status == 201
 
-    response = create_callflow(auth, account_id, user_name, user_ext)
+    response = create_callflow(context, account_id, user_name, user_ext)
     assert response.status == 201
 
-    response = create_device(auth, account_id, user_name)
+    response = create_device(context, account_id, user_name)
     assert response.status == 201

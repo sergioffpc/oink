@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  integration-tests:
+    build: .
+    volumes:
+      - ${PWD}/features:/home/behave/features
+    command: behave features/ -Dhost=kazoo-apps -Dport=8000 -Dusername=oink -Dpassword=oink -Daccount_name=oink -Drealm=sip.integration.tests --show-timings
+    hostname: integration-tests
+    domainname: oink
+    dns:
+      - 172.16.0.2
+    dns_search:
+      - oink
+    networks:
+      - oink_app_net
+
+networks:
+  oink_app_net:
+    external: true
