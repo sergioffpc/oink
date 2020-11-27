@@ -11,10 +11,10 @@ $TTL    604800
 
 ; name servers - PTR records
 2.0     IN  PTR       bind9.oink.
-10.0    IN  PTR       rabbitmq.oink.
-20.0    IN  PTR       couchdb.oink.
-30.0    IN  PTR       kamailio.oink.
-40.0    IN  PTR       freeswitch.oink.
+
+10.0    IN  PTR       kazoo-rabbitmq.oink.
+20.0    IN  PTR       kazoo-couchdb.oink.
+30.0    IN  PTR       kazoo-kamailio.oink.
+40.0    IN  PTR       kazoo-freeswitch.oink.
 50.0    IN  PTR       kazoo-apps.oink.
-55.0    IN  PTR       kazoo-ecallmgr.oink.
-60.0    IN  PTR       monster-ui.oink.
+60.0    IN  PTR       kazoo-ui.oink.

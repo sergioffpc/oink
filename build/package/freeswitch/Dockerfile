@@ -18,7 +18,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y freeswitch freeswitch-mod-
     freeswitch-mod-opus freeswitch-mod-sndfile freeswitch-mod-sofia freeswitch-mod-local-stream                     \
     freeswitch-mod-tone-stream freeswitch-mod-shout freeswitch-mod-flite freeswitch-mod-say-en
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dnsutils net-tools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libcap2-bin dnsutils net-tools tcpdump sngrep
+
+RUN setcap cap_net_raw+ep /usr/sbin/tcpdump
+RUN setcap cap_net_raw+ep /usr/bin/sngrep
 
 COPY system/sbin/ /usr/sbin/
 RUN chmod 755 /usr/sbin/kazoo-freeswitch

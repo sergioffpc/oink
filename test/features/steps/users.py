@@ -1,15 +1,44 @@
-import http.client
+import httplib
 import json
-import re
-import uuid
 
 from behave import given
+from hamcrest import assert_that, equal_to
 
-from steps.accounts import get_account_id_by_name
+from steps.accounts import get_account_id_by_realm
 from steps.auth import authenticate
 
 
-def create_user(context, account_id, user_name, user_ext):
+def get_user_id_by_name(context, account_id, name):
+    auth = authenticate(context)
+    auth_token = auth['auth_token']
+    headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
+
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("GET", "/v2/accounts/{}/users".format(account_id), headers=headers)
+    response = json.loads(conn.getresponse().read())
+    conn.close()
+
+    for elm in response['data']:
+        if elm['username'] == name:
+            return elm['id']
+
+    return None
+
+
+def get_user_by_id(context, account_id, user_id):
+    auth = authenticate(context)
+    auth_token = auth['auth_token']
+    headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
+
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("GET", "/v2/accounts/{}/users/{}".format(account_id, user_id), headers=headers)
+    response = json.loads(conn.getresponse().read())
+    conn.close()
+
+    return response
+
+
+def create_user(context, account_id, username, extension):
     auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
@@ -18,100 +47,32 @@ def create_user(context, account_id, user_name, user_ext):
         "data": {
             "caller_id": {
                 "internal": {
-                    "name": user_name,
-                    "number": user_ext
+                    "name": username,
+                    "number": extension
                 }
             },
-            "presence_id": user_ext,
-            "first_name": user_name,
-            "last_name": user_name,
+            "presence_id": extension,
+            "first_name": username,
+            "last_name": username,
             "priv_level": "user",
-            "username": user_name,
-            "password": user_name
+            "username": username,
+            "password": username
         }
     })
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("PUT", f"/v2/accounts/{account_id}/users", body, headers)
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("PUT", "/v2/accounts/{}/users".format(account_id), body, headers)
     response = conn.getresponse()
-    print(response.read())
+
+    assert_that(response.status, equal_to(201), response.reason)
 
     conn.close()
 
     return response
 
 
-def create_callflow(context, account_id, user_name, user_ext):
-    auth = authenticate(context)
-    auth_token = auth['auth_token']
-    headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
+@given(u'an user with name "{user}" and extension "{extension}" for realm "{realm}"')
+def step_impl(context, user, extension, realm):
+    account_id = get_account_id_by_realm(context, realm)
 
-    callflow_id = re.sub('-', '', str(uuid.uuid4()))
-    body = json.dumps({
-        "data": {
-            "flow": {
-                "data": {
-                    "timeout": 20,
-                    "id": callflow_id
-                },
-                "module": "user"
-            },
-            "name": user_name,
-            "numbers": [user_ext],
-            "owner_id": callflow_id,
-            "type": "mainUserCallflow"
-        }
-    })
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("PUT", f"/v2/accounts/{account_id}/callflows", body, headers)
-    response = conn.getresponse()
-    print(response.read())
-
-    conn.close()
-
-    return response
-
-
-def create_device(context, account_id, user_name):
-    auth = authenticate(context)
-    auth_token = auth['auth_token']
-    headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
-
-    body = json.dumps({
-        "data": {
-            "sip": {
-                "password": user_name,
-                "realm": context.config.userdata['realm'],
-                "username": user_name
-            },
-            "device_type": "softphone",
-            "enabled": "true",
-            "media": {
-                "audio": {
-                    "codecs": ["PCMU", "PCMA"]
-                }
-            },
-            "name": user_name
-        }
-    })
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("PUT", f"/v2/accounts/{account_id}/devices", body, headers)
-    response = conn.getresponse()
-    print(response.read())
-
-    conn.close()
-
-    return response
-
-
-@given(u'an user with name "{user_name}" and extension "{user_ext}" for account "{acc_name}"')
-def step_impl(context, user_name, user_ext, acc_name):
-    account_id = get_account_id_by_name(context, acc_name)
-
-    response = create_user(context, account_id, user_name, user_ext)
-    assert response.status == 201
-
-    response = create_callflow(context, account_id, user_name, user_ext)
-    assert response.status == 201
-
-    response = create_device(context, account_id, user_name)
-    assert response.status == 201
+    response = create_user(context, account_id, user, extension)
+    assert_that(response.status, equal_to(201), response.reason)

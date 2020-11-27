@@ -10,11 +10,11 @@ oink.   IN         SOA     bind9 root.bind9.oink. (
         IN      NS      bind9
 
 ; name servers - A records
-bind9           IN  A       172.16.0.2
-rabbitmq        IN  A       172.16.0.10
-couchdb         IN  A       172.16.0.20
-kamailio        IN  A       172.16.0.30
-freeswitch      IN  A       172.16.0.40
-kazoo-apps      IN  A       172.16.0.50
-kazoo-ecallmgr  IN  A       172.16.0.55
-monster-ui      IN  A       172.16.0.60
+bind9               IN  A       172.16.0.2
+
+kazoo-rabbitmq      IN  A       172.16.0.10
+kazoo-couchdb       IN  A       172.16.0.20
+kazoo-kamailio      IN  A       172.16.0.30
+kazoo-freeswitch    IN  A       172.16.0.40
+kazoo-apps          IN  A       172.16.0.50
+kazoo-ui            IN  A       172.16.0.60

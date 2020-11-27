@@ -1,5 +1,5 @@
 import hashlib
-import http.client
+import httplib
 import json
 
 
@@ -8,7 +8,7 @@ def authenticate(context):
 
     username = context.config.userdata['username']
     password = context.config.userdata['password']
-    credentials = hashlib.md5(f"{username}:{password}".encode('utf-8')).hexdigest()
+    credentials = hashlib.md5("{}:{}".format(username, password).encode('utf-8')).hexdigest()
     body = json.dumps({
         "data": {
             "credentials": credentials,
@@ -16,7 +16,7 @@ def authenticate(context):
         }
     })
 
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/user_auth", body, headers)
     response = conn.getresponse()
 

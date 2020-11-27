@@ -1,32 +1,33 @@
-import http.client
+import httplib
 import json
 
 from behave import given, when
+from hamcrest import assert_that, equal_to
 
 from steps.auth import authenticate
 
 
-def get_account_id_by_name(context, name):
+def get_account_id_by_realm(context, realm):
     auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     reseller_id = auth['data']['account_id']
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("GET", f"/v2/accounts/{reseller_id}/children", headers=headers)
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("GET", "/v2/accounts/{}/children".format(reseller_id), headers=headers)
 
     response = json.loads(conn.getresponse().read())
     conn.close()
 
     for elm in response['data']:
-        if elm['name'] == name and elm['realm'] == context.config.userdata['realm']:
+        if elm['realm'] == realm:
             return elm['id']
 
     return None
 
 
-@given(u'an account with name "{acc_name}"')
-def step_impl(context, acc_name):
+@given(u'an account for realm "{realm}"')
+def step_impl(context, realm):
     auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
@@ -35,43 +36,35 @@ def step_impl(context, acc_name):
     owner_id = auth['data']['owner_id']
     body = json.dumps({
         "data": {
-            "language": "en-US",
-            "name": acc_name,
-            "timezone": "America/Los_Angeles",
-            "realm": context.config.userdata['realm'],
+            "name": realm,
+            "realm": realm,
             "contract": {
                 "representative": {
                     "account_id": reseller_id,
-                    "user_id": owner_id,
-                    "name": "Account Admin"
+                    "user_id": owner_id
                 }
             }
         }
     })
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("PUT", f"/v2/accounts/{reseller_id}", body, headers)
-
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("PUT", "/v2/accounts/{}".format(reseller_id), body, headers)
     response = conn.getresponse()
-    print(response.read())
-
     conn.close()
 
-    assert response.status == 201
+    assert_that(response.status, equal_to(201), response.reason)
 
 
-@when(u'delete account with name "{acc_name}"')
-def step_impl(context, acc_name):
+@when(u'delete the account with realm "{realm}"')
+def step_impl(context, realm):
     auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
-    account_id = get_account_id_by_name(context, acc_name)
+    account_id = get_account_id_by_realm(context, realm)
 
-    conn = http.client.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
-    conn.request("DELETE", f"/v2/accounts/{account_id}", headers=headers)
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("DELETE", "/v2/accounts/{}".format(account_id), headers=headers)
     response = conn.getresponse()
-    print(response.read())
-
     conn.close()
 
-    assert response.status == 200
+    assert_that(response.status, equal_to(200), response.reason)

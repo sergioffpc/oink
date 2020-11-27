@@ -14,16 +14,18 @@ services:
       app_net:
         ipv4_address: 172.16.0.2
 
-  rabbitmq:
+  kazoo-rabbitmq:
     depends_on:
       - bind9
     build: ../../build/package/rabbitmq/
-    hostname: rabbitmq
+    hostname: kazoo-rabbitmq
     domainname: oink
     dns:
       - 172.16.0.2
     dns_search:
       - oink
+    ports:
+      - "15672:15672"
     security_opt:
       - apparmor:unconfined
     cap_add:
@@ -33,11 +35,11 @@ services:
       app_net:
         ipv4_address: 172.16.0.10
 
-  couchdb:
+  kazoo-couchdb:
     depends_on:
       - bind9
     build: ../../build/package/couchdb/
-    hostname: couchdb
+    hostname: kazoo-couchdb
     domainname: oink
     dns:
       - 172.16.0.2
@@ -55,19 +57,19 @@ services:
       app_net:
         ipv4_address: 172.16.0.20
 
-  kamailio:
+  kazoo-kamailio:
     depends_on:
       - bind9
-      - rabbitmq
+      - kazoo-rabbitmq
     build: ../../build/package/kamailio/
-    hostname: kamailio
+    hostname: kazoo-kamailio
     domainname: oink
     dns:
       - 172.16.0.2
     dns_search:
       - oink
     ports:
-      - "5060:5060"
+      - "5060:5060/udp"
     security_opt:
       - apparmor:unconfined
     cap_add:
@@ -77,11 +79,11 @@ services:
       app_net:
         ipv4_address: 172.16.0.30
 
-  freeswitch:
+  kazoo-freeswitch:
     depends_on:
       - bind9
     build: ../../build/package/freeswitch/
-    hostname: freeswitch
+    hostname: kazoo-freeswitch
     domainname: oink
     dns:
       - 172.16.0.2
@@ -99,12 +101,12 @@ services:
   kazoo-apps:
     depends_on:
       - bind9
-      - couchdb
-      - rabbitmq
-      - freeswitch
-      - kamailio
+      - kazoo-couchdb
+      - kazoo-rabbitmq
+      - kazoo-freeswitch
+      - kazoo-kamailio
     build: ../../build/package/kazoo/
-    command: /usr/sbin/kazoo-applications start
+    command: /home/kazoo/src/kazoo/scripts/dev/kazoo.sh foreground
     hostname: kazoo-apps
     domainname: oink
     dns:
@@ -112,7 +114,7 @@ services:
     dns_search:
       - oink
     environment:
-      - VMARGS_PATH=/etc/kazoo/core/vm.args
+      - KAZOO_APPS=blackhole,callflow,cdr,conference,crossbar,ecallmgr,fax,hangups,media_mgr,milliwatt,omnipresence,pivot,registrar,reorder,stepswitch,sysconf,tasks,teletype,trunkstore,webhooks
     ports:
       - "8000:8000"
     security_opt:
@@ -124,45 +126,19 @@ services:
       app_net:
         ipv4_address: 172.16.0.50
 
-  kazoo-ecallmgr:
-    depends_on:
-      - bind9
-      - couchdb
-      - rabbitmq
-      - freeswitch
-      - kamailio
-    build: ../../build/package/kazoo/
-    command: /usr/sbin/kazoo-ecallmgr start
-    hostname: kazoo-ecallmgr
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
-    environment:
-      - VMARGS_PATH=/etc/kazoo/core/vm.args
-    security_opt:
-      - apparmor:unconfined
-    cap_add:
-      - SYS_NICE
-      - SYS_PTRACE
-    networks:
-      app_net:
-        ipv4_address: 172.16.0.55
-
-  monster-ui:
+  kazoo-ui:
     depends_on:
       - bind9
       - kazoo-apps
     build: ../../build/package/monster-ui/
-    hostname: monster-ui
+    hostname: kazoo-ui
     domainname: oink
     dns:
       - 172.16.0.2
     dns_search:
       - oink
     ports:
-      - "80:80"
+      - "80:3000"
     security_opt:
       - apparmor:unconfined
     cap_add:
