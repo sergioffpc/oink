@@ -43,7 +43,9 @@ def before_scenario(context, scenario):
 
     # Init library with default config and some customized
     # logging config.
-    context.pj_lib.init(log_cfg=pj.LogConfig(level=0, callback=log_cb))
+    ua_cfg = pj.UAConfig()
+    ua_cfg.max_calls = 16
+    context.pj_lib.init(ua_cfg=ua_cfg, log_cfg=pj.LogConfig(level=0, callback=log_cb))
 
     # Create UDP transport which listens to any available port.
     context.pj_transport = context.pj_lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(0))
@@ -52,7 +54,6 @@ def before_scenario(context, scenario):
     context.pj_lib.set_null_snd_dev()
 
     context.pj_devices = {}
-    context.pj_calls = {}
 
 
 def after_scenario(context, scenario):
@@ -64,7 +65,7 @@ def after_scenario(context, scenario):
     # Shutdown the library.
     context.pj_transport = None
 
-    for acc in context.pj_accounts.values():
+    for acc in context.pj_devices.values():
         acc.delete()
 
     context.pj_lib.destroy()

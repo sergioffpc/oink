@@ -11,25 +11,24 @@ from steps.auth import authenticate
 from steps.users import get_user_id_by_name, get_user_by_id
 
 
-def create_callflow(context, account_id, username, extension):
+def create_callflow(context, account_id, user, extension):
     auth = authenticate(context)
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
-    callflow_id = re.sub('-', '', str(uuid.uuid4()))
+    user_id = get_user_id_by_name(context, account_id, user)
     body = json.dumps({
         "data": {
             "flow": {
                 "data": {
-                    "timeout": 20,
-                    "id": callflow_id
+                    "id": user_id,
+                    "timeout": "20",
                 },
-                "module": "user"
+                "module": "user",
+                "children": {}
             },
-            "name": username,
-            "numbers": [extension],
-            "owner_id": callflow_id,
-            "type": "mainUserCallflow"
+            "name": user,
+            "numbers": [extension]
         }
     })
     conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
@@ -77,10 +76,9 @@ def create_device(context, account_id, user_id, username, password):
 def step_impl(context, username, password, user, realm):
     account_id = get_account_id_by_realm(context, realm)
     user_id = get_user_id_by_name(context, account_id, user)
+    presence_id = get_user_by_id(context, account_id, user_id)['data']['presence_id']
 
-    user = get_user_by_id(context, account_id, user_id)
-
-    response = create_callflow(context, account_id, username, user['data']['presence_id'])
+    response = create_callflow(context, account_id, user, presence_id)
     assert_that(response.status, equal_to(201), response.reason)
 
     response = create_device(context, account_id, user_id, username, password)

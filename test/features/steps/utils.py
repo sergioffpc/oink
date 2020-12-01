@@ -1,6 +1,6 @@
 import time
 
-from behave import when
+from behave import given, when, then
 
 
 @when(u'wait for {duration:d} seconds')
