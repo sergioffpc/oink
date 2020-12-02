@@ -1,15 +1,13 @@
 import httplib
 import json
 import threading
-import time
 
 import pjsua as pj
 from behave import when, then
-from hamcrest import assert_that, equal_to, not_none
+from hamcrest import assert_that, equal_to, not_none, greater_than
 
 from steps.accounts import get_account_id_by_realm
 from steps.auth import authenticate
-
 
 A_LEG = 0
 B_LEG = 1
@@ -18,9 +16,13 @@ current_call_tag = None
 call_tracker = {}
 
 
+# An account specifies the identity of the person (or endpoint) on one side of SIP conversation.  At least one account
+# instance needs to be created before anything else, and from the account instance you can start making/receiving calls
+# as well as adding buddies.
 class AccountCallback(pj.AccountCallback):
-    def __init__(self, account=None):
+    def __init__(self, context, account=None):
         self.sem = None
+        self.context = context
         pj.AccountCallback.__init__(self, account)
 
     def wait(self):
@@ -46,14 +48,17 @@ class AccountCallback(pj.AccountCallback):
         call_tracker[current_call_tag][B_LEG] = call
         current_call_tag = None
 
-        call_cb = CallCallback(call)
+        call_cb = CallCallback(self.context, call)
         call.set_callback(call_cb)
         call.answer(180)
 
 
+# This class represents an ongoing call (or speaking technically, an INVITE session) and can be used to manipulate it,
+# such as to answer the call, hangup the call, put the call on hold, transfer the call, etc.
 class CallCallback(pj.CallCallback):
-    def __init__(self, call=None):
+    def __init__(self, context, call=None):
         self.sem = None
+        self.context = context
         pj.CallCallback.__init__(self, call)
 
     def wait(self):
@@ -72,6 +77,12 @@ class CallCallback(pj.CallCallback):
                                                                            call_info.last_code,
                                                                            call_info.last_reason)
 
+    def on_media_state(self):
+        if self.call.info().media_state == pj.MediaState.ACTIVE:
+            call_slot = self.call.info().conf_slot
+            player_slot = self.context.pj_lib.player_get_slot(self.context.pj_caller_player)
+            self.context.pj_lib.conf_connect(player_slot, call_slot)
+
 
 @when(u'we register a device with username "{username}" and password "{password}" on realm "{realm}"')
 def step_impl(context, username, password, realm):
@@ -81,7 +92,7 @@ def step_impl(context, username, password, realm):
                                proxy="sip:{};lr".format(context.config.userdata['proxy']))
     acc = context.pj_lib.create_account(acc_cfg)
 
-    acc_cb = AccountCallback(acc)
+    acc_cb = AccountCallback(context, acc)
     acc.set_callback(acc_cb)
     acc_cb.wait()
 
@@ -100,10 +111,36 @@ def step_impl(context, src_uri, dst_uri, tag):
         for row in context.table:
             hdr_list.append((row['header_name'].encode('utf-8'), row['header_value'].encode('utf-8')))
 
-    call_cb = CallCallback()
+    call_cb = CallCallback(context)
     call = acc.make_call(dst_uri.encode('utf-8'), cb=call_cb, hdr_list=hdr_list)
     call_tracker[current_call_tag] = [call, None]
     call_cb.wait()
+
+
+@when(u'"{leg}" leg channel from call tagged as "{tag}" on realm "{realm}" must have the following attributes')
+def step_impl(context, leg, tag, realm):
+    global call_tracker
+    call = call_tracker[tag][A_LEG if leg == "a" else B_LEG]
+    call_id = call.info().sip_call_id
+
+    auth = authenticate(context)
+    auth_token = auth['auth_token']
+    headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
+
+    account_id = get_account_id_by_realm(context, realm)
+    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn.request("GET", "/v2/accounts/{}/channels/{}".format(account_id, call_id), headers=headers)
+    response = conn.getresponse()
+    assert_that(response.status, equal_to(200), response.reason)
+
+    channel_details = json.loads(response.read())
+    assert_that(len(channel_details['data']), greater_than(0))
+
+    conn.close()
+
+    for row in context.table:
+        for heading in context.table.headings:
+            assert_that(str(channel_details['data'][heading]), equal_to(row[heading]), heading)
 
 
 @when(u'accepts the call tagged as "{tag}"')
@@ -140,23 +177,21 @@ def step_impl(context, tag, realm):
     response = conn.getresponse()
     assert_that(response.status, equal_to(200), response.reason)
 
-    body = json.loads(response.read())
+    cdrs = json.loads(response.read())
 
     conn.close()
 
-    for cdr in body['data']:
+    for cdr in cdrs['data']:
         if cdr['call_id'] == call_id:
             conn.request("GET", "/v2/accounts/{}/cdrs/{}".format(account_id, cdr['id']), headers=headers)
             response = conn.getresponse()
             assert_that(response.status, equal_to(200), response.reason)
 
             cdr_details = json.loads(response.read())
+            assert_that(len(cdr_details['data']), greater_than(0))
 
             conn.close()
 
             for row in context.table:
                 for heading in context.table.headings:
                     assert_that(str(cdr_details['data'][heading]), equal_to(row[heading]), heading)
-            return
-
-    assert_that(False, "[cdr] not found")

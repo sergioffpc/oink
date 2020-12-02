@@ -1,7 +1,5 @@
 import httplib
 import json
-import re
-import uuid
 
 from behave import given
 from hamcrest import assert_that, equal_to

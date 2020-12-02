@@ -39,6 +39,8 @@ def before_scenario(context, scenario):
     """
     erase(context)
 
+    # You need to instantiate one and exactly one of this class, and from the instance you
+    # can then initialize and start the library.
     context.pj_lib = pj.Lib()
 
     # Init library with default config and some customized
@@ -46,6 +48,9 @@ def before_scenario(context, scenario):
     ua_cfg = pj.UAConfig()
     ua_cfg.max_calls = 16
     context.pj_lib.init(ua_cfg=ua_cfg, log_cfg=pj.LogConfig(level=0, callback=log_cb))
+
+    context.pj_caller_player = context.pj_lib.create_player("features/assets/sample.wav", True)
+    context.pj_callee_player = context.pj_lib.create_player("features/assets/sample.wav", True)
 
     # Create UDP transport which listens to any available port.
     context.pj_transport = context.pj_lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(0))
@@ -63,6 +68,11 @@ def after_scenario(context, scenario):
     erase(context)
 
     # Shutdown the library.
+    context.pj_lib.hangup_all()
+
+    context.pj_lib.player_destroy(context.pj_caller_player)
+    context.pj_lib.player_destroy(context.pj_callee_player)
+
     context.pj_transport = None
 
     for acc in context.pj_devices.values():

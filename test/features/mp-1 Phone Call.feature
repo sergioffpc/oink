@@ -17,6 +17,9 @@ Feature: MP-### - DESCRIPTION
       | X-Ziggy-Greeting | snort, snort |
      And accepts the call tagged as "call-0"
      And wait for 5 seconds
+     And "a" leg channel from call tagged as "call-0" on realm "pigsty.sip.integration.tests" must have the following attributes
+      | answered | destination | call_direction |
+      | True     | 3001        | inbound        |
      And "b" leg hangs up the call tagged as "call-0"
 
     Then call record detail from call tagged as "call-0" on realm "pigsty.sip.integration.tests" must have the following attributes
