@@ -6,15 +6,12 @@ services:
     volumes:
       - ${PWD}/features:/home/behave/features
     entrypoint: behave features/ -Dhost=kazoo-apps.oink -Dport=8000 -Dusername=oink -Dpassword=oink -Daccount_name=oink -Dproxy=kazoo-kamailio.oink:5060 --show-timings
-    hostname: integration-tests
-    domainname: oink
     dns:
       - 172.16.0.2
     dns_search:
       - oink
     networks:
-      oink_app_net:
-        ipv4_address: 172.16.0.254
+      - oink_app_net
 
 networks:
   oink_app_net:

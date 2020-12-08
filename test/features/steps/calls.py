@@ -83,6 +83,9 @@ class CallCallback(pj.CallCallback):
             player_slot = self.context.pj_lib.player_get_slot(self.context.pj_caller_player)
             self.context.pj_lib.conf_connect(player_slot, call_slot)
 
+            rec = self.context.pj_lib.create_recorder("features/assets/recordings/{}.wav".format(self.context.scenario.name))
+            self.context.pj_lib.conf_connect(call_slot, self.context.pj_lib.recorder_get_slot(rec))
+
 
 @when(u'we register a device with username "{username}" and password "{password}" on realm "{realm}"')
 def step_impl(context, username, password, realm):
@@ -150,6 +153,10 @@ def step_impl(context, tag):
 
     assert_that(call, not_none())
     call.answer(200)
+
+    call_slot = call.info().conf_slot
+    player_slot = context.pj_lib.player_get_slot(context.pj_callee_player)
+    context.pj_lib.conf_connect(player_slot, call_slot)
 
 
 @when(u'"{leg}" leg hangs up the call tagged as "{tag}"')

@@ -1,6 +1,6 @@
-Feature: MP-### - DESCRIPTION
+Feature: MP-1 - PHONE CALL
 
-  @integration.smoke
+  @integration
   Scenario: phone call
     Given an account for realm "pigsty.sip.integration.tests"
       And an user with name "lilly" and extension "3000" for realm "pigsty.sip.integration.tests"
@@ -21,6 +21,7 @@ Feature: MP-### - DESCRIPTION
       | answered | destination | call_direction |
       | True     | 3001        | inbound        |
      And "b" leg hangs up the call tagged as "call-0"
+
 
     Then call record detail from call tagged as "call-0" on realm "pigsty.sip.integration.tests" must have the following attributes
       | caller_id_number | callee_id_number | hangup_cause    |
