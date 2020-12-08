@@ -31,7 +31,6 @@ RUN python setup.py build
 RUN python setup.py install --home=/home/behave
 
 WORKDIR /home/behave
-#RUN pip install --user -r requirements.txt
 RUN pip install --user behave
 RUN pip install --user PyHamcrest
 
