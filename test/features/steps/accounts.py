@@ -1,5 +1,6 @@
 import httplib
 import json
+import urlparse
 
 from behave import given, when
 from hamcrest import assert_that, equal_to
@@ -13,7 +14,12 @@ def get_account_id_by_realm(context, realm):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     reseller_id = auth['data']['account_id']
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("GET", "/v2/accounts/{}/children".format(reseller_id), headers=headers)
 
     response = json.loads(conn.getresponse().read())
@@ -46,7 +52,12 @@ def step_impl(context, realm):
             }
         }
     })
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("PUT", "/v2/accounts/{}".format(reseller_id), body, headers)
     response = conn.getresponse()
     conn.close()
@@ -62,7 +73,11 @@ def step_impl(context, realm):
 
     account_id = get_account_id_by_realm(context, realm)
 
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("DELETE", "/v2/accounts/{}".format(account_id), headers=headers)
     response = conn.getresponse()
     conn.close()

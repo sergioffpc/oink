@@ -1,6 +1,7 @@
 import httplib
 import json
 import threading
+import urlparse
 
 import pjsua as pj
 from behave import when, then
@@ -131,7 +132,12 @@ def step_impl(context, leg, tag, realm):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     account_id = get_account_id_by_realm(context, realm)
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("GET", "/v2/accounts/{}/channels/{}".format(account_id, call_id), headers=headers)
     response = conn.getresponse()
     assert_that(response.status, equal_to(200), response.reason)
@@ -179,7 +185,12 @@ def step_impl(context, tag, realm):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     account_id = get_account_id_by_realm(context, realm)
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("GET", "/v2/accounts/{}/cdrs".format(account_id), headers=headers)
     response = conn.getresponse()
     assert_that(response.status, equal_to(200), response.reason)

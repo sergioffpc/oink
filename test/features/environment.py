@@ -18,7 +18,12 @@ def erase(context):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     reseller_id = auth['data']['account_id']
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("GET", "/v2/accounts/{}/children".format(reseller_id), headers=headers)
     response = conn.getresponse()
 

@@ -1,5 +1,6 @@
 import httplib
 import json
+import urlparse
 
 from behave import given
 from hamcrest import assert_that, equal_to
@@ -29,7 +30,12 @@ def create_callflow(context, account_id, user, extension):
             "numbers": [extension]
         }
     })
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("PUT", "/v2/accounts/{}/callflows".format(account_id), body, headers)
     response = conn.getresponse()
     conn.close()
@@ -62,7 +68,12 @@ def create_device(context, account_id, user_id, username, password):
             "owner_id": user_id
         }
     })
-    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
+
+    url = urlparse.urlparse(context.config.userdata['api'])
+    if url.scheme == "https":
+        conn = httplib.HTTPSConnection(url.hostname, url.port)
+    else:
+        conn = httplib.HTTPConnection(url.hostname, url.port)
     conn.request("PUT", "/v2/accounts/{}/devices".format(account_id), body, headers)
     response = conn.getresponse()
     conn.close()
