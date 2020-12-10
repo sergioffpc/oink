@@ -13,7 +13,7 @@ def get_user_id_by_name(context, account_id, name):
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("GET", "/v2/accounts/{}/users".format(account_id), headers=headers)
     response = json.loads(conn.getresponse().read())
     conn.close()
@@ -30,7 +30,7 @@ def get_user_by_id(context, account_id, user_id):
     auth_token = auth['auth_token']
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("GET", "/v2/accounts/{}/users/{}".format(account_id, user_id), headers=headers)
     response = json.loads(conn.getresponse().read())
     conn.close()
@@ -59,7 +59,7 @@ def create_user(context, account_id, username, extension):
             "password": username
         }
     })
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/accounts/{}/users".format(account_id), body, headers)
     response = conn.getresponse()
 

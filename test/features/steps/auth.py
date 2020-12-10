@@ -16,7 +16,7 @@ def authenticate(context):
         }
     })
 
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/user_auth", body, headers)
     response = conn.getresponse()
 

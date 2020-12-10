@@ -18,7 +18,7 @@ def erase(context):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     reseller_id = auth['data']['account_id']
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("GET", "/v2/accounts/{}/children".format(reseller_id), headers=headers)
     response = conn.getresponse()
 
@@ -85,6 +85,7 @@ def before_scenario(context, scenario):
         'remote_port': remote.port,
         'cseq': randint(1, 65535),
         'call_id': uuid.uuid4(),
+        'user_agent': context.scenario
     }
 
     context.ua_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

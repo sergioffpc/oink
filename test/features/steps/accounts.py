@@ -13,7 +13,7 @@ def get_account_id_by_realm(context, realm):
     headers = {"Content-type": "application/json", "X-Auth-Token": auth_token}
 
     reseller_id = auth['data']['account_id']
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("GET", "/v2/accounts/{}/children".format(reseller_id), headers=headers)
 
     response = json.loads(conn.getresponse().read())
@@ -46,7 +46,7 @@ def step_impl(context, realm):
             }
         }
     })
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/accounts/{}".format(reseller_id), body, headers)
     response = conn.getresponse()
     conn.close()
@@ -62,7 +62,7 @@ def step_impl(context, realm):
 
     account_id = get_account_id_by_realm(context, realm)
 
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("DELETE", "/v2/accounts/{}".format(account_id), headers=headers)
     response = conn.getresponse()
     conn.close()

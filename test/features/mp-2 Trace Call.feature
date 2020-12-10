@@ -5,9 +5,13 @@ Feature: MP-2 - TRACE REGISTER FLOW
     #
     # Prepare the test environment.
     #
-    Given an account for realm "pigsty.sip.integration.tests"
-      And an user with name "lilly" and extension "3000" for realm "pigsty.sip.integration.tests"
-      And a device with username "lilly-dev-0", password "******" for user "lilly" on realm "pigsty.sip.integration.tests"
+    Given an account for realm "pigsty.stg.uc.talkdesk.com"
+      And an user with name "lilly" and extension "3000" for realm "pigsty.stg.uc.talkdesk.com"
+      And a device with username "lilly-dev-0", password "******" for user "lilly" on realm "pigsty.stg.uc.talkdesk.com"
+      And the following UAC agent variables
+        | variable  | value                      |
+        | user      | lilly-dev-0                |
+        | realm     | pigsty.stg.uc.talkdesk.com |
 
 
     #
@@ -17,16 +21,16 @@ Feature: MP-2 - TRACE REGISTER FLOW
     When UAC agent starts a new transaction
      And UAC agent sends the message
       """
-      REGISTER sip:pigsty.sip.integration.tests SIP/2.0
+      REGISTER sip:[realm] SIP/2.0
       Via: SIP/2.0/UDP [local_ip]:[local_port];rport;branch=[branch]
       Route: <sip:[remote_ip]:[remote_port];lr>
       Max-Forwards: 70
-      From: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=[tag]
-      To: <sip:lilly-dev-0@pigsty.sip.integration.tests>
+      From: <sip:[user]@[realm]>;tag=[tag]
+      To: <sip:[user]@[realm]>
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      User-Agent: pjsip python
-      Contact: <sip:lilly-dev-0@[local_ip]:[local_port];ob>
+      User-Agent: [user_agent]
+      Contact: <sip:[user]@[local_ip]:[local_port];ob>
       Expires: 300
       Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
       Content-Length:  0
@@ -34,14 +38,18 @@ Feature: MP-2 - TRACE REGISTER FLOW
     Then UAC agent must receive a message
       """
       SIP/2.0 401 Unauthorized
-      Via: SIP/2.0/UDP [local_ip]:[local_port];rport=[local_port];branch=[branch];received=[local_ip]
-      From: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=[tag]
-      To: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=.*
+      From: <sip:[user]@[realm]>;tag=[tag]
+      To: <sip:[user]@[realm]>;tag=.*
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      WWW-Authenticate: Digest realm="pigsty.sip.integration.tests", nonce=".*"
+      Contact: <sip:[user]@[local_ip]:[local_port];ob>
+      WWW-Authenticate: Digest realm="[realm]",nonce=.*,algorithm=MD5
+      Via: SIP/2.0/UDP [local_ip]:[local_port];received=.*;rport=.*;branch=[branch]
       Content-Length: 0
       """
+      And evaluate expression "last.headers['www-authenticate'][0]['nonce']" to variable "nonce"
+      And evaluate expression "last.headers['via'][0]['params']['received']" to variable "translated_ip"
+      And evaluate expression "last.headers['via'][0]['params']['rport']" to variable "translated_port"
 
 
     #
@@ -51,35 +59,30 @@ Feature: MP-2 - TRACE REGISTER FLOW
     When UAC agent starts a new transaction
      And UAC agent sends the message
       """
-      REGISTER sip:pigsty.sip.integration.tests SIP/2.0
-      Via: SIP/2.0/UDP [local_ip]:[local_port];rport;branch=[branch]
+      REGISTER sip:[realm] SIP/2.0
+      Via: SIP/2.0/UDP [translated_ip]:[translated_port];rport;branch=[branch]
       Route: <sip:[remote_ip]:[remote_port];lr>
       Max-Forwards: 70
-      From: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=[tag]
-      To: <sip:lilly-dev-0@pigsty.sip.integration.tests>
+      From: <sip:[user]@[realm]>;tag=[tag]
+      To: <sip:[user]@[realm]>
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      User-Agent: pjsip python
-      Contact: <sip:lilly-dev-0@[local_ip]:[local_port];ob>
+      User-Agent: [user_agent]
+      Contact: <sip:[user]@[translated_ip]:[translated_port];ob>
       Expires: 300
       Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
-      Authorization: Digest username="lilly-dev-0", realm="pigsty.sip.integration.tests", nonce=`last.headers['www-authenticate'][0]['nonce']`, uri="sip:pigsty.sip.integration.tests", response=`response(last, '******')`
+      Authorization: Digest username="[user]",realm="[realm]",nonce="[nonce]",uri="sip:[realm]",response="`response(last, '******')`",algorithm=MD5
       Content-Length:  0
       """
-    # Here we are lazy and only validates the first line SIP message response.
     Then UAC agent must receive a message
       """
-      SIP/2.0 100 checking your credentials
-      """
-     And UAC agent must receive a message
-      """
       SIP/2.0 200 OK
-      Via: SIP/2.0/UDP [local_ip]:[local_port];rport=[local_port];branch=[branch];received=[local_ip]
-      From: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=[tag]
-      To: <sip:lilly-dev-0@pigsty.sip.integration.tests>;tag=.*
+      From: <sip:[user]@[realm]>;tag=[tag]
+      To: <sip:[user]@[realm]>;tag=.*
       Call-ID: [call_id]
       CSeq: [cseq] REGISTER
-      Contact: <sip:lilly-dev-0@[local_ip]:[local_port];ob>;expires=300
+      Contact: <sip:[user]@[translated_ip]:[translated_port];ob>;expires=300
       Supported: outbound
+      Via: SIP/2.0/UDP [translated_ip]:[translated_port];rport=[translated_port];branch=[branch]
       Content-Length: 0
       """

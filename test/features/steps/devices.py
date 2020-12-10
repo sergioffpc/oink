@@ -29,7 +29,7 @@ def create_callflow(context, account_id, user, extension):
             "numbers": [extension]
         }
     })
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/accounts/{}/callflows".format(account_id), body, headers)
     response = conn.getresponse()
     conn.close()
@@ -62,7 +62,7 @@ def create_device(context, account_id, user_id, username, password):
             "owner_id": user_id
         }
     })
-    conn = httplib.HTTPConnection(context.config.userdata['host'], context.config.userdata['port'])
+    conn = httplib.HTTPSConnection(context.config.userdata['host'], context.config.userdata['port'])
     conn.request("PUT", "/v2/accounts/{}/devices".format(account_id), body, headers)
     response = conn.getresponse()
     conn.close()
