@@ -29,7 +29,7 @@ To stop the `oink` project you need to run the following command.
 docker-compose stop
 ```
 
-## Kazoo
+## Exposed services
 ### API
 The `oink` project exposes the `Kazoo` API through URL http://localhost:8000/v2/ .
 
