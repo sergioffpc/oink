@@ -17,11 +17,11 @@ def evaluate(context, term):
     return eval(term, {
         'vars': context.ua_dict,
         'last': context.ua_last_message,
-        'response': compute_response,
+        'md5_digest': md5_digest,
     }, {}).strip('\"')
 
 
-def compute_response(message, password):
+def md5_digest(message, password):
     search = re.search('sip:([^@]+)@([^@]+)', message.headers['from']['uri'])
     username = search.group(1)
     realm = search.group(2)

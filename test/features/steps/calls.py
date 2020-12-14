@@ -103,6 +103,12 @@ def step_impl(context, username, password, realm):
     context.pj_devices["sip:{}@{}".format(username, realm)] = acc
 
 
+@when(u'we unregister device with username "{username}" on realm "{realm}"')
+def step_impl(context, username, realm):
+    acc = context.pj_devices["sip:{}@{}".format(username, realm)]
+    acc.delete()
+
+
 @when(u'"{src_uri}" makes a call to "{dst_uri}" tagged as "{tag}"')
 def step_impl(context, src_uri, dst_uri, tag):
     global current_call_tag, call_tracker

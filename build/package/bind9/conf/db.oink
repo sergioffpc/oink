@@ -18,3 +18,6 @@ kazoo-kamailio      IN  A       172.16.0.30
 kazoo-freeswitch    IN  A       172.16.0.40
 kazoo-apps          IN  A       172.16.0.50
 kazoo-ui            IN  A       172.16.0.60
+
+; name servers - SRV records
+_sip._udp.oink. 300 IN SRV 0 100 5060 kazoo-kamailio.oink.

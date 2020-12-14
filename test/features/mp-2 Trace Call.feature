@@ -71,7 +71,7 @@ Feature: MP-2 - TRACE REGISTER FLOW
       Contact: <sip:[user]@[translated_ip]:[translated_port];ob>
       Expires: 300
       Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
-      Authorization: Digest username="[user]",realm="[realm]",nonce="[nonce]",uri="sip:[realm]",response="`response(last, '******')`",algorithm=MD5
+      Authorization: Digest username="[user]",realm="[realm]",nonce="[nonce]",uri="sip:[realm]",response="`md5_digest(last, '******')`",algorithm=MD5
       Content-Length:  0
       """
     Then UAC agent must receive a message
