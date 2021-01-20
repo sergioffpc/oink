@@ -106,7 +106,9 @@ services:
       - kazoo-freeswitch
       - kazoo-kamailio
     build: ../../build/package/kazoo/
-    command: /home/kazoo/src/kazoo/scripts/dev/kazoo.sh foreground
+    command: bash -c "make -C src/kazoo &&
+      make -C src/kazoo build-dev-release &&
+      src/kazoo/_rel/kazoo/bin/kazoo foreground"
     hostname: kazoo-apps
     domainname: oink
     dns:
@@ -117,6 +119,10 @@ services:
       - KAZOO_APPS=blackhole,callflow,cdr,conference,crossbar,ecallmgr,fax,hangups,media_mgr,milliwatt,omnipresence,pivot,registrar,reorder,stepswitch,sysconf,tasks,teletype,trunkstore,webhooks
     ports:
       - "8000:8000"
+    volumes:
+      - type: bind
+        source: $KAZOO_SOURCE
+        target: /home/kazoo/src/kazoo
     security_opt:
       - apparmor:unconfined
     cap_add:

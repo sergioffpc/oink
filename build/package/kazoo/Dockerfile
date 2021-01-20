@@ -19,7 +19,6 @@ USER kazoo
 WORKDIR /home/kazoo
 RUN pip install --user kazoo mkdocs mkdocs-bootstrap mkdocs-bootswatch pymdown-extensions
 
-RUN git clone --branch 4.3 https://github.com/2600Hz/kazoo.git /home/kazoo/src/kazoo
 RUN git clone --branch 4.3 https://github.com/2600hz/kazoo-sounds.git /home/kazoo/src/kazoo-sounds
 
 RUN git clone --branch 4.3 https://github.com/2600hz/monster-ui.git /home/kazoo/src/monster-ui
@@ -33,12 +32,5 @@ RUN git clone --branch 4.3 https://github.com/2600hz/monster-ui-voicemails.git /
 RUN git clone --branch 4.3 https://github.com/2600hz/monster-ui-fax.git /home/kazoo/src/monster-ui/src/apps/fax
 RUN git clone --branch 4.3 https://github.com/2600hz/monster-ui-csv-onboarding.git /home/kazoo/src/monster-ui/src/apps/csv-onboarding
 
-WORKDIR /home/kazoo/src/kazoo
-RUN make
-RUN make build-release
-
-RUN make sup_completion
-RUN mv sup.bash /home/kazoo/.bash_completion
-
 ENV KAZOO_ROOT=/home/kazoo/src/kazoo/_rel/kazoo
-ENV PATH=/home/kazoo/src/kazoo/_rel/kazoo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=$KAZOO_ROOT/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
