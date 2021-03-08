@@ -5,7 +5,7 @@ services:
     build: .
     volumes:
       - ${PWD}/features:/home/behave/features
-    entrypoint: behave features/ -Dapi=http://kazoo-apps.oink:8000 -Dusername=oink -Dpassword=oink -Daccount_name=oink -Dproxy=kazoo-kamailio.oink:5060 --show-timings
+    entrypoint: behave features/ -Dapi=http://kazoo-apps.oink_app_net:8000 -Dusername=oink -Dpassword=oink -Daccount_name=oink -Dproxy=kazoo-kamailio.oink_app_net:5060 --show-timings
     dns:
       - 172.16.0.2
     dns_search:

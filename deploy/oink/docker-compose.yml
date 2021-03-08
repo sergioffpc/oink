@@ -1,29 +1,10 @@
 version: "3.7"
 
 services:
-  bind9:
-    build: ../../build/package/bind9/
-    hostname: bind9
-    domainname: oink
-    security_opt:
-      - apparmor:unconfined
-    cap_add:
-      - SYS_NICE
-      - SYS_PTRACE
-    networks:
-      app_net:
-        ipv4_address: 172.16.0.2
-
   kazoo-rabbitmq:
-    depends_on:
-      - bind9
     build: ../../build/package/rabbitmq/
     hostname: kazoo-rabbitmq
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
+    domainname: oink_app_net
     ports:
       - "15672:15672"
     security_opt:
@@ -36,15 +17,9 @@ services:
         ipv4_address: 172.16.0.10
 
   kazoo-couchdb:
-    depends_on:
-      - bind9
     build: ../../build/package/couchdb/
     hostname: kazoo-couchdb
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
+    domainname: oink_app_net
     ports:
       - "5984:5984"
       - "5986:5986"
@@ -59,11 +34,10 @@ services:
 
   kazoo-kamailio:
     depends_on:
-      - bind9
       - kazoo-rabbitmq
     build: ../../build/package/kamailio/
     hostname: kazoo-kamailio
-    domainname: oink
+    domainname: oink_app_net
     dns:
       - 172.16.0.2
     dns_search:
@@ -79,16 +53,12 @@ services:
       app_net:
         ipv4_address: 172.16.0.30
 
-  kazoo-freeswitch:
+  kazoo-freeswitch-alpha:
     depends_on:
-      - bind9
-    build: ../../build/package/freeswitch/
-    hostname: kazoo-freeswitch
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
+      - kazoo-postgres
+    build: $FREESWITCH_SOURCE
+    hostname: kazoo-freeswitch-alpha
+    domainname: oink_app_net
     security_opt:
       - apparmor:unconfined
     cap_add:
@@ -96,25 +66,35 @@ services:
       - SYS_PTRACE
     networks:
       app_net:
-        ipv4_address: 172.16.0.40
+        ipv4_address: 172.16.0.41
+  kazoo-freeswitch-beta:
+    depends_on:
+      - kazoo-postgres
+    build: $FREESWITCH_SOURCE
+    hostname: kazoo-freeswitch-beta
+    domainname: oink_app_net
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.42
 
   kazoo-apps:
     depends_on:
-      - bind9
       - kazoo-couchdb
       - kazoo-rabbitmq
-      - kazoo-freeswitch
+      - kazoo-freeswitch-alpha
+      - kazoo-freeswitch-beta
       - kazoo-kamailio
     build: ../../build/package/kazoo/
     command: bash -c "make -C src/kazoo &&
       make -C src/kazoo build-dev-release &&
       src/kazoo/_rel/kazoo/bin/kazoo foreground"
     hostname: kazoo-apps
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
+    domainname: oink_app_net
     environment:
       - KAZOO_APPS=blackhole,callflow,cdr,conference,crossbar,ecallmgr,fax,hangups,media_mgr,milliwatt,omnipresence,pivot,registrar,reorder,stepswitch,sysconf,tasks,teletype,trunkstore,webhooks
     ports:
@@ -134,15 +114,10 @@ services:
 
   kazoo-ui:
     depends_on:
-      - bind9
       - kazoo-apps
     build: ../../build/package/monster-ui/
     hostname: kazoo-ui
-    domainname: oink
-    dns:
-      - 172.16.0.2
-    dns_search:
-      - oink
+    domainname: oink_app_net
     ports:
       - "80:3000"
     security_opt:
@@ -153,6 +128,25 @@ services:
     networks:
       app_net:
         ipv4_address: 172.16.0.60
+
+  kazoo-postgres:
+    image: postgres
+    hostname: kazoo-postgres
+    domainname: oink_app_net
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    security_opt:
+      - apparmor:unconfined
+    cap_add:
+      - SYS_NICE
+      - SYS_PTRACE
+    networks:
+      app_net:
+        ipv4_address: 172.16.0.70
 
 networks:
   app_net:

@@ -7,7 +7,6 @@ Feature: EXAMPLE
       And an user with name "ziggy" and extension "3001" for realm "pigsty.oink"
       And a device with username "ziggy-dev-0", password "******" for user "ziggy" on realm "pigsty.oink"
 
-
     When we register a device with username "lilly-dev-0" and password "******" on realm "pigsty.oink"
      And we register a device with username "ziggy-dev-0" and password "******" on realm "pigsty.oink"
      And "sip:lilly-dev-0@pigsty.oink" makes a call to "sip:3001@pigsty.oink" tagged as "call-0"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-docker-compose exec kazoo-couchdb curl -vvv -X PUT localhost:5984/_node/kazoo_couchdb@kazoo-couchdb.oink/_config/admins/couchdb -d '"couchdb"'
+docker-compose exec kazoo-couchdb curl -vvv -X PUT localhost:5984/_node/kazoo_couchdb@kazoo-couchdb.oink_app_net/_config/admins/couchdb -d '"couchdb"'
 
 # Wait for Kazoo to start up.
 sleep 15
@@ -17,8 +17,9 @@ docker-compose exec kazoo-apps sup crossbar_maintenance create_account oink oink
 
 docker-compose exec kazoo-apps sup crossbar_maintenance init_apps /home/kazoo/src/monster-ui/src/apps/ http://localhost:8000/v2
 
-docker-compose exec kazoo-apps sup ecallmgr_maintenance add_fs_node freeswitch@kazoo-freeswitch.oink
-docker-compose exec kazoo-apps sup ecallmgr_maintenance allow_sbc kamailio kazoo-kamailio.oink
+docker-compose exec kazoo-apps sup ecallmgr_maintenance add_fs_node freeswitch@kazoo-freeswitch-alpha.oink_app_net
+docker-compose exec kazoo-apps sup ecallmgr_maintenance add_fs_node freeswitch@kazoo-freeswitch-beta.oink_app_net
+docker-compose exec kazoo-apps sup ecallmgr_maintenance allow_sbc kamailio kazoo-kamailio.oink_app_net
 docker-compose exec kazoo-apps sup ecallmgr_maintenance reload_acls
 
 # It can be a good idea to run a refresh over the installed databases - there are sporadic reports of partial
