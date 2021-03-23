@@ -19,8 +19,12 @@ docker-compose exec kazoo-apps sup crossbar_maintenance init_apps /home/kazoo/sr
 
 docker-compose exec kazoo-apps sup ecallmgr_maintenance add_fs_node freeswitch@kazoo-freeswitch-alpha.oink_app_net
 docker-compose exec kazoo-apps sup ecallmgr_maintenance add_fs_node freeswitch@kazoo-freeswitch-beta.oink_app_net
+
 docker-compose exec kazoo-apps sup ecallmgr_maintenance allow_sbc kamailio kazoo-kamailio.oink_app_net
+
 docker-compose exec kazoo-apps sup ecallmgr_maintenance reload_acls
+
+docker-compose exec kazoo-apps sup crossbar_maintenance start_module cb_sup
 
 # It can be a good idea to run a refresh over the installed databases - there are sporadic reports of partial
 # installations hanging at this point.

@@ -34,6 +34,7 @@ services:
 
   kazoo-kamailio:
     depends_on:
+      - kazoo-postgres
       - kazoo-rabbitmq
     build: ../../build/package/kamailio/
     hostname: kazoo-kamailio
@@ -130,7 +131,8 @@ services:
         ipv4_address: 172.16.0.60
 
   kazoo-postgres:
-    image: postgres
+    image: postgres:13.2
+    command: postgres -c shared_buffers=512MB -c max_connections=1024
     hostname: kazoo-postgres
     domainname: oink_app_net
     environment:
